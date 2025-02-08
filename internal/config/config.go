@@ -28,3 +28,34 @@ func Read() (Config, error) {
 	}
 	return conf, nil
 }
+
+func (c Config) SetUser(username string) error {
+	c.CurrentUserName = username
+	return write(c)
+}
+
+func write(conf Config) error {
+	fullPath, err := getConfigFilePath()
+	if err != nil {
+		return err
+	}
+
+	mConf, err := json.Marshal(conf)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(fullPath, mConf, 0666)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getConfigFilePath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	fullPath := homeDir + configPath
+	if err != nil {
+		return "", err
+	}
+	return fullPath, nil
+}
