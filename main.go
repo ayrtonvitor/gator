@@ -1,24 +1,25 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"os"
 
+	"github.com/ayrtonvitor/gator/internal/command"
 	"github.com/ayrtonvitor/gator/internal/config"
+	"github.com/ayrtonvitor/gator/internal/state"
 )
 
 func main() {
 	conf, err := config.Read()
 	if err != nil {
-		log.Fatalf("[Error] Could not read %v", err)
+		log.Fatalf("Could not read %v", err)
 	}
-	fmt.Printf("Read config: %+v\n", conf)
-
-	err = conf.SetUser("userexp")
-
-	conf, err = config.Read()
+	state := &state.State{
+		Config: &conf,
+	}
+	commands := command.GetCommandList()
+	err = commands.TryRunInputCommand(os.Args, state)
 	if err != nil {
-		log.Fatalf("[Error] Could not read %v", err)
+		log.Fatalf("Could not execute command: %v", err)
 	}
-	fmt.Printf("Read new config: %+v\n", conf)
 }
