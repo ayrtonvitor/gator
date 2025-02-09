@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/ayrtonvitor/gator/internal/database"
+	"github.com/ayrtonvitor/gator/internal/rss"
 	"github.com/ayrtonvitor/gator/internal/state"
 	"github.com/google/uuid"
 )
@@ -85,5 +87,15 @@ func listUsers(s *state.State, _ command) error {
 
 		fmt.Printf("* %s\n", user.Name)
 	}
+	return nil
+}
+
+func aggregate(s *state.State, _ command) error {
+	feed, err := rss.FetchFeed(context.Background(), "https://www.wagslane.dev/index.xml", *http.DefaultClient)
+
+	if err != nil {
+		return err
+	}
+	fmt.Println(feed)
 	return nil
 }
