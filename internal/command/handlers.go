@@ -99,3 +99,28 @@ func aggregate(s *state.State, _ command) error {
 	fmt.Println(feed)
 	return nil
 }
+
+func addFeed(s *state.State, c command) error {
+	if len(c.Args) != 2 {
+		return errors.New("Command addFeed gets exactly two arguments `name` and `url` in this order")
+	}
+	usr, err := s.Db.GetUser(context.Background(), s.Config.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("Could add new feed %s: %w", c.Args[0], err)
+	}
+
+	newFeed := database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      c.Args[0],
+		Url:       c.Args[1],
+		UserID:    usr.ID,
+	}
+	feed, err := s.Db.CreateFeed(context.Background(), newFeed)
+	if err != nil {
+		return fmt.Errorf("Could add new feed %s: %w", c.Args[0], err)
+	}
+	fmt.Printf("New feed %s added: %v\n", feed.Name, feed)
+	return nil
+}
