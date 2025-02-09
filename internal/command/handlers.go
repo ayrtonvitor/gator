@@ -151,3 +151,29 @@ func listFeeds(s *state.State, _ command) error {
 	}
 	return nil
 }
+
+func follow(s *state.State, c command) error {
+	if len(c.Args) != 1 {
+		return errors.New("Command follow gets exactly one argument `feed url`")
+	}
+	feed, err := s.Db.GetFeedsById(context.Background())
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("Can not follow feed %s because it is not registered")
+		}
+		return fmt.Errorf("Could not follow feed: %w", err)
+	}
+
+	feedFollow, err := s.Db.CreateFeedFollow(context.Background(),
+		database.CreateFeedFollowParams{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			UserID:    s.Config.CurrentUserId,
+			FeedID:    f.Id,
+		})
+	if err != nil {
+		return fmt.Errorf("Could not follow feed: %w", err)
+	}
+	fmt.Printf("%s is now following %s", feedFollow)
+}
