@@ -33,6 +33,7 @@ func GetCommandList() commands {
 		Handlers: make(map[string]func(*state.State, command) error),
 	}
 	cmds.register("login", login)
+	cmds.register("register", register)
 	return cmds
 }
 
