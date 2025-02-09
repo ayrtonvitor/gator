@@ -14,7 +14,7 @@ import (
 )
 
 const getFeeds = `-- name: GetFeeds :many
-SELECT f.id, f.created_at, f.updated_at, f.name, f.url, f.user_id, u.name AS user_name
+SELECT f.id, f.created_at, f.updated_at, f.name, f.url, u.name AS user_name
 FROM feeds f
 LEFT JOIN users u
   ON f.user_id = u.id
@@ -26,7 +26,6 @@ type GetFeedsRow struct {
 	UpdatedAt time.Time
 	Name      string
 	Url       string
-	UserID    uuid.UUID
 	UserName  sql.NullString
 }
 
@@ -45,7 +44,6 @@ func (q *Queries) GetFeeds(ctx context.Context) ([]GetFeedsRow, error) {
 			&i.UpdatedAt,
 			&i.Name,
 			&i.Url,
-			&i.UserID,
 			&i.UserName,
 		); err != nil {
 			return nil, err
