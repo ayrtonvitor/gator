@@ -8,6 +8,7 @@ import (
 type Config struct {
 	DBURL           string `json:"db_url"`
 	CurrentUserName string `json:"current_user_name"`
+	ConnString      string `json:"connection_string"`
 }
 
 const configPath string = "/.config/experiments/.gatorconfig.json"
@@ -40,7 +41,7 @@ func write(conf Config) error {
 		return err
 	}
 
-	mConf, err := json.Marshal(conf)
+	mConf, err := json.MarshalIndent(conf, "", "  ")
 	if err != nil {
 		return err
 	}
