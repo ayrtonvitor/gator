@@ -16,12 +16,18 @@ func login(s *state.State, c command) error {
 	if len(c.Args) != 1 {
 		return errors.New("Login expects a single argument (`user name`)")
 	}
-	usr := c.Args[0]
-	err := s.Config.SetUser(usr)
+	usr, err := s.Db.GetUser(context.Background(), c.Args[0])
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("User %s does not exist. Register a new user with `register`", c.Args[0])
+		}
+		return fmt.Errorf("Could not login with user %s", c.Args[0])
+	}
+
+	err = s.Config.SetUser(usr.Name)
 	if err != nil {
 		return fmt.Errorf("Could not login: %w", err)
 	}
-	fmt.Printf("Logged in as %s\n", usr)
 	return nil
 }
 
