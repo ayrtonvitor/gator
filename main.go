@@ -5,18 +5,15 @@ import (
 	"os"
 
 	"github.com/ayrtonvitor/gator/internal/command"
-	"github.com/ayrtonvitor/gator/internal/config"
-	"github.com/ayrtonvitor/gator/internal/state"
+	_ "github.com/lib/pq"
 )
 
 func main() {
-	conf, err := config.Read()
+	state, err := setup()
 	if err != nil {
-		log.Fatalf("Could not read %v", err)
+		log.Fatal("Could not initialize app: %w", err)
 	}
-	state := &state.State{
-		Config: &conf,
-	}
+
 	commands := command.GetCommandList()
 	err = commands.TryRunInputCommand(os.Args, state)
 	if err != nil {
