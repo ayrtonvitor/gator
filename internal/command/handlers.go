@@ -71,3 +71,19 @@ func reset(s *state.State, _ command) error {
 	fmt.Println("Successful reset")
 	return nil
 }
+
+func listUsers(s *state.State, _ command) error {
+	users, err := s.Db.GetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("Could not get users from db: %w", err)
+	}
+	for _, user := range users {
+		if user.Name == s.Config.CurrentUserName {
+			fmt.Printf("* %s (current)\n", user.Name)
+			continue
+		}
+
+		fmt.Printf("* %s\n", user.Name)
+	}
+	return nil
+}

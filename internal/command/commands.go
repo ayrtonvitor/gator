@@ -35,6 +35,7 @@ func GetCommandList() commands {
 	cmds.register("login", login)
 	cmds.register("register", register)
 	cmds.register("reset", reset)
+	cmds.register("users", listUsers)
 	return cmds
 }
 
