@@ -68,9 +68,14 @@ func register(s *state.State, c command) error {
 }
 
 func reset(s *state.State, _ command) error {
-	err := s.Db.Reset(context.Background())
-	if err != nil {
-		return fmt.Errorf("Unsuccessful reset: %w", err)
+	ctx := context.Background()
+	deletes := make([]func(*database.Queries, context.Context) error, 0)
+	deletes = append(deletes, (*database.Queries).DeleteUsers, (*database.Queries).DeleteFeeds)
+	for _, delFunc := range deletes {
+		err := delFunc(s.Db, ctx)
+		if err != nil {
+			return fmt.Errorf("Unsuccessful reset. Database might be in invalid state: %w", err)
+		}
 	}
 	fmt.Println("Successful reset")
 	return nil
