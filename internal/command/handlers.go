@@ -62,3 +62,12 @@ func register(s *state.State, c command) error {
 	return s.Config.SetUser(userModel.Name)
 
 }
+
+func reset(s *state.State, _ command) error {
+	err := s.Db.Reset(context.Background())
+	if err != nil {
+		return fmt.Errorf("Unsuccessful reset: %w", err)
+	}
+	fmt.Println("Successful reset")
+	return nil
+}
