@@ -3,9 +3,11 @@ package command
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ayrtonvitor/gator/internal/database"
@@ -122,5 +124,30 @@ func addFeed(s *state.State, c command) error {
 		return fmt.Errorf("Could add new feed %s: %w", c.Args[0], err)
 	}
 	fmt.Printf("New feed %s added: %v\n", feed.Name, feed)
+	return nil
+}
+
+func listFeeds(s *state.State, _ command) error {
+	feeds, err := s.Db.GetFeeds(context.Background())
+	if err != nil {
+		return fmt.Errorf("Could not get feeds from db: %w", err)
+	}
+	for _, feed := range feeds {
+		identedRowItem, err := json.MarshalIndent(struct {
+			Name     string
+			Url      string
+			UserName string
+		}{
+			Name:     feed.Name,
+			Url:      feed.Url,
+			UserName: feed.UserName.String,
+		}, "", "  ")
+		if err != nil {
+			fmt.Printf("%v\n", feed)
+			continue
+		}
+		replacer := strings.NewReplacer("\"", "", "{\n", "", "\n}", "")
+		fmt.Printf("\n%s\n", replacer.Replace(string(identedRowItem)))
+	}
 	return nil
 }
