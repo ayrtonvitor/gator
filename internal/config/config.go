@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/google/uuid"
 )
 
 type Config struct {
-	DBURL           string `json:"db_url"`
-	CurrentUserName string `json:"current_user_name"`
-	ConnString      string `json:"connection_string"`
+	DBURL           string    `json:"db_url"`
+	CurrentUserName string    `json:"current_user_name"`
+	ConnString      string    `json:"connection_string"`
+	CurrentUserId   uuid.UUID `json:"current_user_id"`
 }
 
 const configPath string = "/.config/experiments/.gatorconfig.json"
@@ -31,8 +34,10 @@ func Read() (Config, error) {
 	return conf, nil
 }
 
-func (c Config) SetUser(username string) error {
+func (c Config) SetUser(username string, id uuid.UUID) error {
+	c.CurrentUserId = id
 	c.CurrentUserName = username
+
 	err := write(c)
 	if err != nil {
 		return fmt.Errorf("Could not set user %s", username)

@@ -33,7 +33,7 @@ func login(s *state.State, c command) error {
 		return fmt.Errorf("Could not login with user %s", usrName)
 	}
 
-	err = s.Config.SetUser(usr.Name)
+	err = s.Config.SetUser(usr.Name, usr.ID)
 	if err != nil {
 		return fmt.Errorf("Could not login: %w", err)
 	}
@@ -63,7 +63,7 @@ func register(s *state.State, c command) error {
 	if err != nil {
 		return fmt.Errorf("Could not register %s: %w", c.Args[0], err)
 	}
-	return s.Config.SetUser(userModel.Name)
+	return s.Config.SetUser(userModel.Name, userModel.ID)
 
 }
 
