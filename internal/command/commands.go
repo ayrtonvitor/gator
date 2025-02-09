@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/ayrtonvitor/gator/internal/state"
@@ -25,4 +26,23 @@ func (c *commands) run(s *state.State, cmd command) error {
 		return fmt.Errorf("%s is not a valid command.", cmd.Name)
 	}
 	return handler(s, cmd)
+}
+
+func GetCommandList() commands {
+	cmds := commands{
+		Handlers: make(map[string]func(*state.State, command) error),
+	}
+	cmds.register("login", login)
+	return cmds
+}
+
+func (c *commands) TryRunInputCommand(cmdLineargs []string, state *state.State) error {
+	if len(cmdLineargs) < 2 {
+		return errors.New("Did not pass a command")
+	}
+	cmd := command{
+		Name: cmdLineargs[1],
+		Args: cmdLineargs[2:],
+	}
+	return c.run(state, cmd)
 }
