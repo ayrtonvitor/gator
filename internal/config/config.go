@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -32,7 +33,12 @@ func Read() (Config, error) {
 
 func (c Config) SetUser(username string) error {
 	c.CurrentUserName = username
-	return write(c)
+	err := write(c)
+	if err != nil {
+		return fmt.Errorf("Could not set user %s", username)
+	}
+	fmt.Printf("Successfully set %s as user\n", username)
+	return nil
 }
 
 func write(conf Config) error {
