@@ -9,10 +9,9 @@ import (
 )
 
 type Config struct {
-	DBURL           string    `json:"db_url"`
-	CurrentUserName string    `json:"current_user_name"`
-	ConnString      string    `json:"connection_string"`
-	CurrentUserId   uuid.UUID `json:"current_user_id"`
+	DBURL           string `json:"db_url"`
+	CurrentUserName string `json:"current_user_name"`
+	ConnString      string `json:"connection_string"`
 }
 
 const configPath string = "/.config/experiments/.gatorconfig.json"
@@ -35,7 +34,6 @@ func Read() (Config, error) {
 }
 
 func (c Config) SetUser(username string, id uuid.UUID) error {
-	c.CurrentUserId = id
 	c.CurrentUserName = username
 
 	err := write(c)

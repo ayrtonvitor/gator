@@ -37,11 +37,11 @@ func GetCommandList() commands {
 	cmds.register("reset", reset)
 	cmds.register("users", listUsers)
 	cmds.register("agg", aggregate)
-	cmds.register("addfeed", addFeed)
+	cmds.register("addfeed", middlewareLoggedIn(addFeed))
 	cmds.register("feeds", listFeeds)
-	cmds.register("follow", follow)
+	cmds.register("follow", middlewareLoggedIn(follow))
 	cmds.register("following", following)
-	cmds.register("unfollow", unfollow)
+	cmds.register("unfollow", middlewareLoggedIn(unfollow))
 	return cmds
 }
 

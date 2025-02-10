@@ -107,7 +107,7 @@ func aggregate(s *state.State, _ command) error {
 	return nil
 }
 
-func addFeed(s *state.State, c command) error {
+func addFeed(s *state.State, c command, user database.User) error {
 	if len(c.Args) != 2 {
 		return errors.New("Command addFeed gets exactly two arguments `name` and `url` in this order")
 	}
@@ -124,7 +124,7 @@ func addFeed(s *state.State, c command) error {
 		return fmt.Errorf("Could add new feed %s: %w", c.Args[0], err)
 	}
 	fmt.Printf("New feed %s added: %v\n", feed.Name, feed)
-	return follow(s, command{Name: "follow", Args: []string{c.Args[1]}})
+	return follow(s, command{Name: "follow", Args: []string{c.Args[1]}}, user)
 }
 
 func listFeeds(s *state.State, _ command) error {
@@ -152,7 +152,7 @@ func listFeeds(s *state.State, _ command) error {
 	return nil
 }
 
-func follow(s *state.State, c command) error {
+func follow(s *state.State, c command, user database.User) error {
 	if len(c.Args) != 1 {
 		return errors.New("Command follow gets exactly one argument `feed url`")
 	}
@@ -169,7 +169,7 @@ func follow(s *state.State, c command) error {
 			ID:        uuid.New(),
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
-			UserID:    s.Config.CurrentUserId,
+			UserID:    user.ID,
 			FeedID:    feed.ID,
 		})
 	if err != nil {
@@ -194,7 +194,7 @@ func following(s *state.State, c command) error {
 	return nil
 }
 
-func unfollow(s *state.State, c command) error {
+func unfollow(s *state.State, c command, user database.User) error {
 	if len(c.Args) != 1 {
 		return errors.New("Command unfollow get exactly one argument `feed url`")
 	}
@@ -204,7 +204,7 @@ func unfollow(s *state.State, c command) error {
 		return fmt.Errorf("Could not get feed %s to unfollow: %w", c.Args[0], err)
 	}
 
-	err = s.Db.UnfollowFeed(context.Background(), database.UnfollowFeedParams{UserID: s.Config.CurrentUserId, FeedID: feed.ID})
+	err = s.Db.UnfollowFeed(context.Background(), database.UnfollowFeedParams{UserID: user.ID, FeedID: feed.ID})
 	if err != nil {
 		return fmt.Errorf("Could not unfollow %s", c.Args[0])
 	}
