@@ -42,6 +42,7 @@ func GetCommandList() commands {
 	cmds.register("follow", middlewareLoggedIn(follow))
 	cmds.register("following", following)
 	cmds.register("unfollow", middlewareLoggedIn(unfollow))
+	cmds.register("browse", middlewareLoggedIn(browse))
 	return cmds
 }
 

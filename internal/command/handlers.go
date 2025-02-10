@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -218,5 +220,35 @@ func unfollow(s *state.State, c command, user database.User) error {
 		return fmt.Errorf("Could not unfollow %s", c.Args[0])
 	}
 	fmt.Printf("Successfully unfollowed %s\n", feed.Name)
+	return nil
+}
+
+func browse(s *state.State, c command, user database.User) error {
+	if len(c.Args) > 1 {
+		return errors.New("Command browse accepts at mostone argument `posts to read`")
+	}
+	ptr := 2
+	if len(c.Args) == 1 {
+		n, err := strconv.Atoi(c.Args[0])
+		if err != nil {
+			return fmt.Errorf("%s is not a valid argument for the browse command", c.Args[0])
+		}
+		ptr = n
+	}
+
+	posts, err := s.Db.GetPostsFromUser(context.Background(), database.GetPostsFromUserParams{UserID: user.ID, Limit: int32(ptr)})
+	if err != nil {
+		return fmt.Errorf("Error while browsing posts: %w", err)
+	}
+
+	for _, post := range posts {
+		if post.Description.Valid {
+			formated, err := xml.MarshalIndent(post.Description.String, "", "  ")
+			if err == nil {
+				post.Description.String = string(formated)
+			}
+		}
+		fmt.Println(post)
+	}
 	return nil
 }
