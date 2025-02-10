@@ -3,6 +3,7 @@ package rss
 import (
 	"context"
 	"encoding/xml"
+	"fmt"
 	"html"
 	"io"
 	"net/http"
@@ -24,7 +25,7 @@ type RSSItem struct {
 	PubDate     string `xml:"pubDate"`
 }
 
-func FetchFeed(ctx context.Context, feedURL string, client http.Client) (*RSSFeed, error) {
+func FetchFeed(ctx context.Context, feedURL string, client *http.Client) (*RSSFeed, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", feedURL, nil)
 	if err != nil {
 		return nil, err
@@ -59,5 +60,13 @@ func (feed *RSSFeed) unescapeTitleAndDescription() {
 	for i, item := range feed.Channel.Item {
 		feed.Channel.Item[i].Title = html.UnescapeString(item.Title)
 		feed.Channel.Item[i].Description = html.UnescapeString(item.Description)
+	}
+}
+
+func (feed *RSSFeed) PrintFeed() {
+	fmt.Println(feed.Channel.Title)
+
+	for _, item := range feed.Channel.Item {
+		fmt.Println(item.Title)
 	}
 }

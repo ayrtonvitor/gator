@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/ayrtonvitor/gator/internal/database"
-	"github.com/ayrtonvitor/gator/internal/rss"
 	"github.com/ayrtonvitor/gator/internal/state"
 	"github.com/google/uuid"
 )
@@ -97,14 +96,22 @@ func listUsers(s *state.State, _ command) error {
 	return nil
 }
 
-func aggregate(s *state.State, _ command) error {
-	feed, err := rss.FetchFeed(context.Background(), "https://www.wagslane.dev/index.xml", *http.DefaultClient)
-
-	if err != nil {
-		return err
+func aggregate(s *state.State, c command) error {
+	if len(c.Args) != 1 {
+		return errors.New("Aggregate command takes a single required argument `delay` in the format #d\n" +
+			"where `d` is the interval (`s`, `m`, `h`, `d` for seconds, minutes, hours and days,\n" +
+			"respectively and `#` is the number fo such intervals")
 	}
-	fmt.Println(feed)
-	return nil
+
+	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+
+	ticker := time.NewTicker(time.Duration(10 * time.Second))
+	for ; ; <-ticker.C {
+		err := scrapeFeed(s, client)
+		if err != nil {
+			fmt.Printf("Error while scraping feed: %v", errors.Unwrap(err))
+		}
+	}
 }
 
 func addFeed(s *state.State, c command, user database.User) error {
