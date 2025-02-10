@@ -2,14 +2,18 @@ package command
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/ayrtonvitor/gator/internal/database"
 	"github.com/ayrtonvitor/gator/internal/rss"
 	"github.com/ayrtonvitor/gator/internal/state"
+	"github.com/google/uuid"
 )
 
 func scrapeFeed(s *state.State, client *http.Client) error {
@@ -24,8 +28,28 @@ func scrapeFeed(s *state.State, client *http.Client) error {
 	}
 	s.Db.MarkFeedFetched(context.Background(), next.ID)
 
-	feed.PrintFeed()
-	return nil
+	err = errors.Join()
+	for _, item := range feed.Channel.Item {
+		hasTitle := len(item.Title) != 0
+		hasDescription := len(item.Description) != 0
+		publicationTime := parsePublTime(item.PubDate)
+		_, dbErr := s.Db.CreatePost(context.Background(),
+			database.CreatePostParams{
+				ID:          uuid.New(),
+				CreatedAt:   time.Now(),
+				UpdatedAt:   time.Now(),
+				Title:       sql.NullString{String: item.Title, Valid: hasTitle},
+				Url:         item.Link,
+				Description: sql.NullString{String: item.Description, Valid: hasDescription},
+				PublishedAt: publicationTime,
+				FeedID:      next.ID,
+			})
+		if dbErr != nil {
+			err = errors.Join(err, dbErr)
+		}
+		fmt.Println(sql.NullString{String: item.Description, Valid: hasDescription})
+	}
+	return err
 }
 
 func getScrapringInterval(arg string) (time.Duration, error) {
@@ -57,5 +81,16 @@ func getScrapingIntervalMult(c string) (time.Duration, error) {
 		return time.Hour, nil
 	default:
 		return 0, fmt.Errorf("Invalid suffix")
+	}
+}
+
+func parsePublTime(timeAsString string) sql.NullTime {
+	parsed, err := time.Parse(time.RFC3339, timeAsString)
+	if err != nil {
+		return sql.NullTime{Valid: false}
+	}
+	return sql.NullTime{
+		Time:  parsed,
+		Valid: true,
 	}
 }
