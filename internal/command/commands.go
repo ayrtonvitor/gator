@@ -40,6 +40,7 @@ func GetCommandList() commands {
 	cmds.register("addfeed", addFeed)
 	cmds.register("feeds", listFeeds)
 	cmds.register("follow", follow)
+	cmds.register("following", following)
 	return cmds
 }
 

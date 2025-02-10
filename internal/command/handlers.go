@@ -178,3 +178,18 @@ func follow(s *state.State, c command) error {
 	fmt.Printf("%s is now following %s\n", s.Config.CurrentUserName, feedFollow.FeedName)
 	return nil
 }
+
+func following(s *state.State, c command) error {
+	if len(c.Args) > 0 {
+		return errors.New("Command following gets no arguments")
+	}
+	feeds, err := s.Db.GetFeedFollowsForUser(context.Background(), s.Config.CurrentUserName)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("Could not get the feeds being followed\n")
+	}
+	fmt.Println(s.Config.CurrentUserName + " follows:")
+	for _, feed := range feeds {
+		fmt.Println(feed.FeedName)
+	}
+	return nil
+}
