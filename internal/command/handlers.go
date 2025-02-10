@@ -98,14 +98,16 @@ func listUsers(s *state.State, _ command) error {
 
 func aggregate(s *state.State, c command) error {
 	if len(c.Args) != 1 {
-		return errors.New("Aggregate command takes a single required argument `delay` in the format #d\n" +
-			"where `d` is the interval (`s`, `m`, `h`, `d` for seconds, minutes, hours and days,\n" +
-			"respectively and `#` is the number fo such intervals")
+		return errors.New("Aggregate command takes a single required argument `delay`")
 	}
 
 	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
 
-	ticker := time.NewTicker(time.Duration(10 * time.Second))
+	delay, err := getScrapringInterval(c.Args[0])
+	if err != nil {
+		return fmt.Errorf("Could not start aggregating feed %w", err)
+	}
+	ticker := time.NewTicker(delay)
 	for ; ; <-ticker.C {
 		err := scrapeFeed(s, client)
 		if err != nil {
