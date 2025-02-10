@@ -156,12 +156,12 @@ func follow(s *state.State, c command) error {
 	if len(c.Args) != 1 {
 		return errors.New("Command follow gets exactly one argument `feed url`")
 	}
-	feed, err := s.Db.GetFeedsById(context.Background())
+	feed, err := s.Db.GetFeedByUrl(context.Background(), c.Args[0])
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("Can not follow feed %s because it is not registered")
+			return fmt.Errorf("Can not follow feed %s because it is not registered", c.Args[0])
 		}
-		return fmt.Errorf("Could not follow feed: %w", err)
+		return fmt.Errorf("Could not get feed to follow feed: %w", err)
 	}
 
 	feedFollow, err := s.Db.CreateFeedFollow(context.Background(),
@@ -170,10 +170,11 @@ func follow(s *state.State, c command) error {
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 			UserID:    s.Config.CurrentUserId,
-			FeedID:    f.Id,
+			FeedID:    feed.ID,
 		})
 	if err != nil {
 		return fmt.Errorf("Could not follow feed: %w", err)
 	}
-	fmt.Printf("%s is now following %s", feedFollow)
+	fmt.Printf("%s is now following %s\n", s.Config.CurrentUserName, feedFollow.FeedName)
+	return nil
 }
