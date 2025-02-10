@@ -193,3 +193,21 @@ func following(s *state.State, c command) error {
 	}
 	return nil
 }
+
+func unfollow(s *state.State, c command) error {
+	if len(c.Args) != 1 {
+		return errors.New("Command unfollow get exactly one argument `feed url`")
+	}
+
+	feed, err := s.Db.GetFeedByUrl(context.Background(), c.Args[0])
+	if err != nil {
+		return fmt.Errorf("Could not get feed %s to unfollow: %w", c.Args[0], err)
+	}
+
+	err = s.Db.UnfollowFeed(context.Background(), database.UnfollowFeedParams{UserID: s.Config.CurrentUserId, FeedID: feed.ID})
+	if err != nil {
+		return fmt.Errorf("Could not unfollow %s", c.Args[0])
+	}
+	fmt.Printf("Successfully unfollowed %s\n", feed.Name)
+	return nil
+}
