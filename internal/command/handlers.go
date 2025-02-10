@@ -124,7 +124,7 @@ func addFeed(s *state.State, c command) error {
 		return fmt.Errorf("Could add new feed %s: %w", c.Args[0], err)
 	}
 	fmt.Printf("New feed %s added: %v\n", feed.Name, feed)
-	return nil
+	return follow(s, command{Name: "follow", Args: []string{c.Args[1]}})
 }
 
 func listFeeds(s *state.State, _ command) error {
