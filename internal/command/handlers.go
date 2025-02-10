@@ -220,16 +220,3 @@ func unfollow(s *state.State, c command, user database.User) error {
 	fmt.Printf("Successfully unfollowed %s\n", feed.Name)
 	return nil
 }
-
-func middlewareLoggedIn(handler func(s *state.State, c command, user database.User) error) func(*state.State, command) error {
-	return func(s *state.State, c command) error {
-		usr, err := s.Db.GetUser(context.Background(), s.Config.CurrentUserName)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				return fmt.Errorf("User %s does not exist. Register a new user with `register`", s.Config.CurrentUserName)
-			}
-			return fmt.Errorf("Could not login with user %s: %w", s.Config.CurrentUserName, err)
-		}
-		return handler(s, c, usr)
-	}
-}
